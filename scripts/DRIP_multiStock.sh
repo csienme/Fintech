@@ -4,16 +4,15 @@ model_name=TimeMixer
 
 seq_len=32
 pred_len=1
-e_layers=3
-down_sampling_layers=3
+e_layers=2
+down_sampling_layers=2
 down_sampling_window=2
-learning_rate=0.01
-d_model=32
-d_ff=32
-batch_size=64
-train_epochs=50
+learning_rate=0.001
+d_model=16
+d_ff=16
+batch_size=32
+train_epochs=30
 patience=10
-
 
 
 
@@ -23,9 +22,9 @@ python -u run.py \
   --comment no_clip\
   --task_name stock_forecast_DRIP\
   --is_training 1 \
-  --root_path ../NASDAQ_split \
+  --root_path ../NASDAQ_split_dataset \
   --data_path ''\
-  --model_id 0531_2146 \
+  --model_id 2011 \
   --model $model_name \
   --data MultipleStockDRIP\
   --features MS \

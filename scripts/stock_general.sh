@@ -1,6 +1,6 @@
 #export CUDA_VISIBLE_DEVICES=0
 
-model_name=TimeMixer
+model_name=RNN
 
 seq_len=32
 pred_len=1
@@ -11,17 +11,17 @@ learning_rate=0.01
 d_model=16
 d_ff=32
 batch_size=32
-train_epochs=50
+train_epochs=20
 patience=10
 
 
 
 
 python -u run.py \
-  --comment clamp_loss=10\
+  --comment rnn\
   --task_name stock_forecast \
   --is_training 1 \
-  --root_path ../NASDAQ_split \
+  --root_path ../NASDAQ_split_dataset \
   --data_path ''\
   --model_id $seq_len'_'$pred_len \
   --model $model_name \

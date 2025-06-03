@@ -1,6 +1,6 @@
 import os
 import torch
-from models import TimeMixer, TimeMixerPP
+from models import TimeMixer, TimeMixerPP, RNN
 
 
 class Exp_Basic(object):
@@ -8,7 +8,8 @@ class Exp_Basic(object):
         self.args = args
         self.model_dict = {
             'TimeMixer': TimeMixer,
-            'TimeMixerPP': TimeMixerPP
+            'TimeMixerPP': TimeMixerPP,
+            'RNN': RNN
         }
         self.device = self._acquire_device()
         
