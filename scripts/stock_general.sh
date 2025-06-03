@@ -46,5 +46,5 @@ python -u run.py \
   --train_epochs $train_epochs \
   --patience $patience \
   --down_sampling_layers $down_sampling_layers \
-  --down_sampling_method avg \
+  --down_sampling_method conv \
   --down_sampling_window $down_sampling_window

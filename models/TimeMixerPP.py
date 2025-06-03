@@ -266,7 +266,7 @@ class Model(nn.Module):
         else:
             raise ValueError('Downsampling method is error,only supporting the max, avg, conv1D')
 
-        if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
+        if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast' or self.task_name == 'stock_forecast':
             self.predict_layers = torch.nn.ModuleList(
                 [
                     torch.nn.Linear(
@@ -345,8 +345,14 @@ class Model(nn.Module):
 
         if self.configs.channel_mixing and self.channel_independence == 1:
             _, T, D = x_list[-1].size()
+            
+            # print('debug x_list[-1].shape', x_list[-1].shape)
+            # print('debug B, N, T, D:', B, N, T, D)
+            # print('debug T*D =', T * D)
 
             coarse_scale_enc_out = x_list[-1].reshape(B, N, T * D)
+
+
             coarse_scale_enc_out, _ = self.channel_mixing_attention(coarse_scale_enc_out, coarse_scale_enc_out,
                                                                     coarse_scale_enc_out, None)
             x_list[-1] = coarse_scale_enc_out.reshape(B * N, T, D) + x_list[-1]

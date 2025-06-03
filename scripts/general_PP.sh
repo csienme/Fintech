@@ -9,19 +9,19 @@ down_sampling_layers=3
 down_sampling_window=2
 learning_rate=0.01
 d_model=16
-d_ff=32
+d_ff=64
 batch_size=32
-train_epochs=50
+train_epochs=30
 patience=10
 
 
 
 
 python -u run_PP.py \
-  --comment clamp_loss=10\
+  --comment PP\
   --task_name stock_forecast \
   --is_training 1 \
-  --root_path ../NASDAQ_split \
+  --root_path ../NASDAQ_split_dataset \
   --data_path ''\
   --model_id $seq_len'_'$pred_len \
   --model $model_name \
@@ -47,4 +47,5 @@ python -u run_PP.py \
   --patience $patience \
   --down_sampling_layers $down_sampling_layers \
   --down_sampling_method avg \
-  --down_sampling_window $down_sampling_window
+  --down_sampling_window $down_sampling_window \
+  --n_heads 2
