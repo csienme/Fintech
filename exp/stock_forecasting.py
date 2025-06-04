@@ -13,6 +13,7 @@ import os
 import time
 import warnings
 import numpy as np
+import pandas as pd
 import random
 warnings.filterwarnings('ignore')
 
@@ -239,79 +240,180 @@ class Stock_Forecast_DRIP(Exp_Basic):
 
 
 
+    # def test(self, setting, test=0):
+    #     test_data, test_loader = self._get_data(flag='test')
+    #     if test:
+    #         print('loading model')
+    #         self.model.load_state_dict(torch.load(os.path.join('./checkpoints/' + setting, 'checkpoint.pth')))
+
+    #     checkpoints_path = './checkpoints/' + setting + '/'
+    #     preds = []
+    #     trues = []
+    #     dates = []
+    #     ids = []
+        
+    #     folder_path = './test_results/' + setting + '/'
+    #     if not os.path.exists(folder_path):
+    #         os.makedirs(folder_path)
+
+    #     self.model.eval()
+    #     with torch.no_grad():
+    #         for i, (batch_x, batch_y, batch_x_mark, batch_y_mark, batch_embed_id) in enumerate(test_loader):
+    #             batch_x = batch_x.float().to(self.device)
+    #             batch_y = batch_y.float().to(self.device)
+
+    #             batch_x_mark = batch_x_mark.float().to(self.device)
+    #             batch_y_mark = batch_y_mark.float().to(self.device)
+
+    #             batch_embed_id = batch_embed_id.to(self.device)
+
+    #             if self.args.down_sampling_layers == 0:
+    #                 dec_inp = torch.zeros_like(batch_y[:, -self.args.pred_len:, :]).float()
+    #                 dec_inp = torch.cat([batch_y[:, :self.args.label_len, :], dec_inp], dim=1).float().to(self.device)
+    #             else:
+    #                 dec_inp = None
+
+    #             # encoder - decoder
+    #             if self.args.use_amp:
+    #                 with torch.cuda.amp.autocast():
+    #                     if self.args.output_attention:
+    #                         outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark, embed_id = batch_embed_id)[0]
+    #                     else:
+    #                         outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark, embed_id = batch_embed_id)
+    #             else:
+    #                 if self.args.output_attention:
+    #                     outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark, embed_id = batch_embed_id)[0]
+
+    #                 else:
+    #                     outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark, embed_id = batch_embed_id)
+
+    #             f_dim = -1 if self.args.features == 'MS' else 0
+                
+    #             outputs = outputs.detach().cpu().numpy()
+    #             batch_y = batch_y.detach().cpu().numpy()
+
+    #             pred = outputs
+    #             true = batch_y
+    #             date = batch_x_mark
+    #             id = batch_embed_id
+
+    #             preds.append(pred)
+    #             trues.append(true)
+    #             dates.append(date)
+    #             ids.append(id)
+                
+    #             if i % 20 == 0:
+    #                 input = batch_x.detach().cpu().numpy()
+    #                 if test_data.scale and self.args.inverse:
+    #                     shape = input.shape
+    #                     input = test_data.inverse_transform(input.squeeze(0)).reshape(shape)
+    #                 gt = np.concatenate((input[0, :, -1], true[0, :, -1]), axis=0)
+    #                 pd = np.concatenate((input[0, :, -1], pred[0, :, -1]), axis=0)
+    #                 visual(gt, pd, os.path.join(folder_path, str(i) + '.pdf'))
+
+                
+    #     preds = np.concatenate(preds, axis=0)
+    #     dates = np.concatenate(dates, axis=0)
+    #     ids = np.concatenate(ids, axis=0)
+        
+    #     print('test shape:', preds.shape, trues.shape)
+    #     preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
+    #     dates = dates.reshape(-1, dates.shape[-2], dates.shape[-1])
+    #     ids = ids.reshape(-1, ids.shape[-2], ids.shape[-1])
+        
+        
+        
+    #     csv_dir = os.path.join(folder_path, "csv_preds")
+    #     os.makedirs(csv_dir, exist_ok=True)
+
+    #     # 2. 生成 DataFrame，仅包含 prediction / ground_truth 两列
+    #     df = pd.DataFrame({
+    #         "date": dates,
+    #         "id": ids,
+    #         "prediction": preds
+    #     })
+
+    #     # 3. 保存到 csv
+    #     csv_path = os.path.join(csv_dir, "date_id_pred.csv")
+    #     df.to_csv(csv_path, index=False)
+    #     print(f"已将预测值与真实值写入：{csv_path}")
+    
+        
+        
+    #     print('test shape:', preds.shape, trues.shape)
+
+    #     mae, mse, rmse, mape, mspe = metric(preds, trues)
+    #     print('mse:{}, mae:{}'.format(mse, mae))
+    #     return
+    
     def test(self, setting, test=0):
         test_data, test_loader = self._get_data(flag='test')
         if test:
-            print('loading model')
-            self.model.load_state_dict(torch.load(os.path.join('./checkpoints/' + setting, 'checkpoint.pth')))
+            self.model.load_state_dict(torch.load(
+                os.path.join('./checkpoints/' + setting, 'checkpoint.pth')
+            ))
 
-        checkpoints_path = './checkpoints/' + setting + '/'
-        preds = []
-        trues = []
-        folder_path = './test_results/' + setting + '/'
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
+        all_dates = []
+        all_ids   = []
+        all_preds = []
+
+        folder_path = f'./test_results/{setting}/'
+        os.makedirs(folder_path, exist_ok=True)
+        csv_dir = os.path.join(folder_path, "csv_preds")
+        os.makedirs(csv_dir, exist_ok=True)
 
         self.model.eval()
         with torch.no_grad():
-            for i, (batch_x, batch_y, batch_x_mark, batch_y_mark, batch_embed_id) in enumerate(test_loader):
-                batch_x = batch_x.float().to(self.device)
-                batch_y = batch_y.float().to(self.device)
+            all_dates, all_ids, all_preds = [], [], []
 
+            for batch in test_loader:
+                if len(batch) == 6:
+                    batch_x, batch_y, batch_x_mark, batch_y_mark, batch_id, batch_date = batch
+                else:
+                    raise ValueError("Expected 6 elements in batch (including date_str)")
+
+                batch_x      = batch_x.float().to(self.device)
+                batch_y      = batch_y.float().to(self.device)
                 batch_x_mark = batch_x_mark.float().to(self.device)
                 batch_y_mark = batch_y_mark.float().to(self.device)
-
-                batch_embed_id = batch_embed_id.to(self.device)
+                batch_id     = batch_id.to(self.device) if batch_id is not None else None
 
                 if self.args.down_sampling_layers == 0:
-                    dec_inp = torch.zeros_like(batch_y[:, -self.args.pred_len:, :]).float()
+                    dec_inp = torch.zeros_like(batch_y[:, -self.args.pred_len:, :])
                     dec_inp = torch.cat([batch_y[:, :self.args.label_len, :], dec_inp], dim=1).float().to(self.device)
                 else:
                     dec_inp = None
 
-                # encoder - decoder
                 if self.args.use_amp:
                     with torch.cuda.amp.autocast():
-                        if self.args.output_attention:
-                            outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark, embed_id = batch_embed_id)[0]
-                        else:
-                            outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark, embed_id = batch_embed_id)
+                        outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark, embed_id=batch_id)
+                        outputs = outputs[0] if self.args.output_attention else outputs
                 else:
-                    if self.args.output_attention:
-                        outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark, embed_id = batch_embed_id)[0]
+                    outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark, embed_id=batch_id)
+                    outputs = outputs[0] if self.args.output_attention else outputs
 
-                    else:
-                        outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark, embed_id = batch_embed_id)
+                outputs_np = outputs.detach().cpu().numpy()
+                if batch_id is not None:
+                    id_np = batch_id.detach().cpu().numpy()
+                    if id_np.ndim == 2:
+                        id_np = id_np.reshape(-1)
 
-                f_dim = -1 if self.args.features == 'MS' else 0
-                
-                outputs = outputs.detach().cpu().numpy()
-                batch_y = batch_y.detach().cpu().numpy()
+                for b in range(outputs_np.shape[0]):
+                    all_dates.append(batch_date[b])  # ✅ 使用 Dataset 回傳的真實日期字串
+                    all_ids.append(int(id_np[b]) if batch_id is not None else None)
+                    all_preds.append(float(outputs_np[b, 0, 0]))
 
-                pred = outputs
-                true = batch_y
+            # 建立 DataFrame 並輸出
+            data = {"date": all_dates, "prediction": all_preds}
+            if any(i is not None for i in all_ids):
+                data["embed_id"] = all_ids
+            df = pd.DataFrame(data)
 
-                preds.append(pred)
-                trues.append(true)
-                if i % 20 == 0:
-                    input = batch_x.detach().cpu().numpy()
-                    if test_data.scale and self.args.inverse:
-                        shape = input.shape
-                        input = test_data.inverse_transform(input.squeeze(0)).reshape(shape)
-                    gt = np.concatenate((input[0, :, -1], true[0, :, -1]), axis=0)
-                    pd = np.concatenate((input[0, :, -1], pred[0, :, -1]), axis=0)
-                    #visual(gt, pd, os.path.join(folder_path, str(i) + '.pdf'))s
+            csv_path = os.path.join(csv_dir, "date_id_pred.csv")
+            df.to_csv(csv_path, index=False)
+            print(f"✅ 已將 date, embed_id, prediction 寫入：{csv_path}")
 
-        preds = np.concatenate(preds, axis=0)
-        trues = np.concatenate(trues, axis=0)
-        print('test shape:', preds.shape, trues.shape)
-        preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
-        trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
-        print('test shape:', preds.shape, trues.shape)
 
-        mae, mse, rmse, mape, mspe = metric(preds, trues)
-        print('mse:{}, mae:{}'.format(mse, mae))
-        return
 
 
 
@@ -461,18 +563,7 @@ class Stock_Forecast(Exp_Basic):
                     f_dim = -1 if self.args.features == 'MS' else 0
 
                     loss = criterion(outputs, batch_y)
-                    
-                    # # prevent gradient explode
-                    # if torch.isnan(loss) or torch.isinf(loss) or loss.item() > self.clamp:
                 
-                    #     # 寫成文字日誌
-                    #     with open("loss_debug.log", "a") as f:
-                    #         f.write(f"[爆炸] Epoch={epoch}, Iter={i}, Loss={loss.item():.4f}\n")
-                    #         f.write(f"batch_x: mean={batch_x.mean().item():.4f}, min={batch_x.min().item():.4f}, max={batch_x.max().item():.4f}\n")
-                    #         f.write(f"batch_y: mean={batch_y.mean().item():.4f}, min={batch_y.min().item():.4f}, max={batch_y.max().item():.4f}\n")
-                    #         f.write(f"outputs: mean={outputs.mean().item():.4f}, min={outputs.min().item():.4f}, max={outputs.max().item():.4f}\n")
-                    #         f.write("\n")
-                    #     continue
                     
                     train_loss.append(loss.item())
 

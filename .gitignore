@@ -1,6 +1,5 @@
 .DS_store
 .python-version
-*.pth
 *.png
 result_*.txt
 

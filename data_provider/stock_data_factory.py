@@ -1,11 +1,13 @@
-from data_provider.stock_data_loader import Dataset_NASDAQ_single, Dataset_stock_multiple, Dataset_stock_DRIP
+from data_provider.stock_data_loader import Dataset_NASDAQ_single, Dataset_stock_multiple, Dataset_stock_DRIP, Dataset_stock_DRIP_ForTesting
 from data_provider.uea import collate_fn
 from torch.utils.data import DataLoader
 
 data_dict = {
     'SingleStock':Dataset_NASDAQ_single,
     'MultipleStock':Dataset_stock_multiple,
-    'MultipleStockDRIP': Dataset_stock_DRIP
+    'MultipleStockDRIP': Dataset_stock_DRIP,
+    'TestingData':Dataset_stock_DRIP_ForTesting
+    
 }
 
 

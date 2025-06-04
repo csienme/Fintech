@@ -1,15 +1,15 @@
 #export CUDA_VISIBLE_DEVICES=0
 
-model_name=RNN
+model_name=TimeMixer
 
 seq_len=32
 pred_len=1
-e_layers=3
+e_layers=4
 down_sampling_layers=3
 down_sampling_window=2
-learning_rate=0.01
+learning_rate=0.001
 d_model=16
-d_ff=32
+d_ff=16
 batch_size=32
 train_epochs=20
 patience=10
@@ -18,7 +18,7 @@ patience=10
 
 
 python -u run.py \
-  --comment rnn\
+  --comment no_drip\
   --task_name stock_forecast \
   --is_training 1 \
   --root_path ../NASDAQ_split_dataset \
@@ -46,5 +46,5 @@ python -u run.py \
   --train_epochs $train_epochs \
   --patience $patience \
   --down_sampling_layers $down_sampling_layers \
-  --down_sampling_method conv \
+  --down_sampling_method avg \
   --down_sampling_window $down_sampling_window

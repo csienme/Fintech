@@ -4,14 +4,14 @@ model_name=TimeMixer
 
 seq_len=32
 pred_len=1
-e_layers=2
+e_layers=4
 down_sampling_layers=2
 down_sampling_window=2
-learning_rate=0.001
+learning_rate=0.01
 d_model=16
 d_ff=16
-batch_size=32
-train_epochs=30
+batch_size=64 #0208 is 32
+train_epochs=25
 patience=10
 
 
@@ -19,16 +19,16 @@ patience=10
 python -u run.py \
   --enable_DRIP 1 \
   --num_stock  168 \
-  --comment no_clip\
+  --comment future_return_0212\
   --task_name stock_forecast_DRIP\
   --is_training 1 \
   --root_path ../NASDAQ_split_dataset \
   --data_path ''\
-  --model_id 2011 \
+  --model_id morning \
   --model $model_name \
   --data MultipleStockDRIP\
   --features MS \
-  --target close\
+  --target future_return\
   --seq_len $seq_len \
   --label_len 0 \
   --pred_len $pred_len \
