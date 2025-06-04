@@ -1,7 +1,7 @@
 import sys
 import os
 import glob
-from add_return_column import add_return_col
+from add_return_column import add_future_return_col
 
 
 
@@ -21,7 +21,7 @@ def process_all_csv_in_folder(folder_path, save_suffix=""):
 
     for file_path in csv_files:
         print(f"處理中：{file_path}")
-        df = add_return_col(file_path)
+        df = add_future_return_col(file_path)
 
         # 產生新檔案名稱
         base = os.path.basename(file_path)  # e.g. "AAPL.csv"

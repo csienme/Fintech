@@ -1,19 +1,19 @@
 import pandas as pd
 import numpy as np
 
-
-def add_return_col(file_path):
+def add_future_return_col(file_path):
     # 讀取資料
     df = pd.read_csv(file_path, parse_dates=['date'])
 
-    # 按照日期排序（保險）
     df = df.sort_values('date')
 
-    # 計算報酬率（可選：用 log return）
-    df['return'] = df['close'].pct_change()  # 一般報酬率
-    # df['log_return'] = np.log(df['close'] / df['close'].shift(1))  # 對數報酬率
-
-    # 去除第一行 NaN
-    df = df.dropna()
+    # if 'return' in df.columns:
+    #     df = df.drop(columns=['return'])
     
+    # 計算未來報酬率（用 open 價）
+    df['future_return'] = df['Open'].shift(-2) / df['Open'].shift(-1) - 1
+
+    # 去除最後兩行 NaN（因為 shift(-2) / shift(-1) 造成的空值）
+    df = df.dropna()
+
     return df

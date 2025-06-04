@@ -1,0 +1,10 @@
+.DS_store
+.python-version
+*.png
+result_*.txt
+
+__pycache__/
+dataset/
+results/
+test_results/
+分別0050/
