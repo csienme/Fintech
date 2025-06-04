@@ -22,7 +22,7 @@ python -u run.py \
   --comment future_return_0212\
   --task_name stock_forecast_DRIP\
   --is_training 0 \
-  --root_path ../NASDAQ_split_dataset \
+  --root_path ../dataset/NASDAQ_split_dataset \
   --data_path ''\
   --model_id morning \
   --model $model_name \
